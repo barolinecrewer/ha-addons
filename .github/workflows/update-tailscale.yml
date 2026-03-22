@@ -22,7 +22,11 @@ jobs:
       - name: Check if update needed
         id: check
         run: |
-          if [ "${{ steps.tailscale.outputs.latest }}" != "${{ steps.tailscale.outputs.current }}" ]; then
+          LATEST="${{ steps.tailscale.outputs.latest }}"
+          CURRENT="${{ steps.tailscale.outputs.current }}"
+          VERSION="${LATEST#v}"
+          URL="https://pkgs.tailscale.com/stable/tailscale_${VERSION}_amd64.tgz"
+          if [ "$LATEST" != "$CURRENT" ] && curl -sI "$URL" | head -1 | grep -q "200"; then
             echo "needs_update=true" >> $GITHUB_OUTPUT
           else
             echo "needs_update=false" >> $GITHUB_OUTPUT
