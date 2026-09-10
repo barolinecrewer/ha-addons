@@ -351,8 +351,8 @@ Unlike `share_homeassistant`, this option only supports `serve` — there is no
 `funnel` value, since SpoolmanSync should never be exposed to the public
 internet.
 
-Tailscale Services are multiplexed by name over the shared HTTPS port 443 (via
-SNI), so this does not need — and does not have — its own port option. Once
+Tailscale Services are multiplexed by name over a shared HTTPS port (via SNI),
+so this reuses `share_on_port` rather than having its own port option. Once
 enabled, SpoolmanSync becomes reachable at
 `https://<service-name>.<tailnet>.ts.net` from any device on your tailnet.
 

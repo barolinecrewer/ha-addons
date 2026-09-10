@@ -47,7 +47,7 @@ fi
 options+=(serve)
 options+=(--service="$(bashio::config 'share_spoolman_service_name')")
 options+=(--bg=false)
-options+=(--https=443)
+options+=(--https="$(bashio::config 'share_on_port')")
 options+=(http://127.0.0.1:"${TARGET_PORT}")
 
 # This service can wait for SpoolmanSync for minutes, let S6 know we are really starting
