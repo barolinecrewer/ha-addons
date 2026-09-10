@@ -79,6 +79,8 @@ login_server: "https://controlplane.tailscale.com"
 share_homeassistant: disabled
 share_on_port: 443
 share_service_name: "svc:homeassistant"
+share_spoolman: disabled
+share_spoolman_service_name: "svc:spoolsync"
 snat_subnet_routes: true
 stateful_filtering: false
 tags:
@@ -336,6 +338,32 @@ More information: [Services][tailscale_info_services]
 This option is unused by default. To make it visible on the configuration
 editor, click "Show unused optional configuration options" at the bottom of the
 page.
+
+### Option: `share_spoolman`
+
+This option allows you to expose the SpoolmanSync add-on's web UI
+(`http://127.0.0.1:3000`) on your tailnet as a named [Tailscale
+Service][tailscale_info_services], using Tailscale Serve.
+
+This option is disabled by default.
+
+Unlike `share_homeassistant`, this option only supports `serve` — there is no
+`funnel` value, since SpoolmanSync should never be exposed to the public
+internet.
+
+Tailscale Services are multiplexed by name over a shared HTTPS port (via SNI),
+so this reuses `share_on_port` rather than having its own port option. Once
+enabled, SpoolmanSync becomes reachable at
+`https://<service-name>.<tailnet>.ts.net` from any device on your tailnet.
+
+### Option: `share_spoolman_service_name`
+
+This option lets you specify the service name the Tailscale Serve feature will
+use to present SpoolmanSync on the tailnet. It needs to start with `svc:`.
+
+Defaults to `svc:spoolsync`.
+
+More information: [Services][tailscale_info_services]
 
 ### Option: `snat_subnet_routes`
 

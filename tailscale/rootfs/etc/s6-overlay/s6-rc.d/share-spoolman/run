@@ -1,0 +1,56 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+export LOG_FD
+# ==============================================================================
+# Home Assistant Community App: Tailscale
+# Enables Tailscale Serve to advertise SpoolmanSync as a named Tailscale Service
+# ==============================================================================
+
+readonly WAIT_DELAY=5   # 5s
+readonly WAIT_COUNT=18  # 18*5s = 90s = 1.5m
+readonly TARGET_PORT=3000
+
+declare wait_counter=0
+declare curl_result
+
+declare -a options
+
+# Validate share_spoolman value
+if ! bashio::config.equals 'share_spoolman' 'serve'
+then
+  bashio::exit.nok "Invalid value '$(bashio::config 'share_spoolman')' for share_spoolman. Must be 'serve'"
+fi
+
+# Check if Tailscale HTTPS is enabled
+if ! /opt/tailscale status --self=true --peers=false --json \
+  | jq -rce '.Self.CapMap | has("https")' > /dev/null;
+then
+  bashio::exit.nok "Tailscale's HTTPS support is disabled"
+fi
+
+# Wait a bit for SpoolmanSync to be available during startup
+while (( 200 != (curl_result=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${TARGET_PORT}")) )); do
+  if (( wait_counter++ == WAIT_COUNT )); then
+    break
+  fi
+  bashio::log.info "Waiting for SpoolmanSync to be ready..."
+  sleep $WAIT_DELAY
+done
+if (( wait_counter != 0 && curl_result == 200)); then
+  bashio::log.info "SpoolmanSync is ready"
+fi
+
+if (( 200 != curl_result )); then
+  bashio::log.warning "SpoolmanSync is not accessible currently on port ${TARGET_PORT}"
+fi
+
+options+=(serve)
+options+=(--service="$(bashio::config 'share_spoolman_service_name')")
+options+=(--bg=false)
+options+=(--https="$(bashio::config 'share_on_port')")
+options+=(http://127.0.0.1:"${TARGET_PORT}")
+
+# This service can wait for SpoolmanSync for minutes, let S6 know we are really starting
+echo "" >&3
+
+exec /opt/tailscale "${options[@]}"
