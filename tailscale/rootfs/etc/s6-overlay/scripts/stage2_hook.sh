@@ -125,8 +125,3 @@ fi
 if bashio::config.equals 'share_homeassistant' 'disabled'; then
     rm /etc/s6-overlay/s6-rc.d/user/contents.d/share-homeassistant
 fi
-
-# Disable share-spoolman service when it has been explicitly disabled
-if bashio::config.equals 'share_spoolman' 'disabled'; then
-    rm /etc/s6-overlay/s6-rc.d/user/contents.d/share-spoolman
-fi
